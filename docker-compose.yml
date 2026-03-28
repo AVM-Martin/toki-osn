@@ -1,0 +1,27 @@
+name: osn
+
+services:
+  mariadb:
+    hostname: mariadb
+    image: mariadb:12.2.2-noble
+    command: --max-connections=1000 --max-allowed-packet=512M --innodb_snapshot_isolation=OFF
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=osn
+      - MYSQL_PASSWORD=osn
+      - MYSQL_DATABASE=osn
+    ports:
+      - 127.0.0.1:3306:3306
+    volumes:
+      - ./db.sql:/docker-entrypoint-initdb.d/db.sql:ro
+      - /var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  osn:
